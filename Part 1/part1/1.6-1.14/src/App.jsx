@@ -31,7 +31,6 @@ const App = () => {
   const positive = () => (good / (good + neutral + bad)) * 100;
   const total = good + neutral + bad;
 
-
   return (
     <>
       <section>
