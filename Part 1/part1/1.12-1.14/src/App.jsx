@@ -1,61 +1,6 @@
 import { useState } from 'react'
 
-//1.6 to 1.11
-const Statistics = ({ data }) => {
-  const { good, neutral, bad, average, positive, total } = data
-  return (
-    <section>
-      <header>
-        <h1>
-          Stadistics
-        </h1>
-      </header>
-        <table>
-          <tbody>
-          <tr>
-            <td>
-              <StatisticLine text='good' value={good} />
 
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <StatisticLine text='neutral' value={neutral} />
-
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <StatisticLine text='bad' value={bad} />
-
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <StatisticLine text='all' value={total} />
-            </td>
-          </tr>
-          <tr>
-            <td>
-
-              <StatisticLine text='average' value={average() ? average() : 0} />
-            </td>
-          </tr>
-          <tr>
-            <td>
-
-              <StatisticLine text='positive' value={`${positive() ? positive() : 0}%`} />
-            </td>
-          </tr>
-          </tbody>
-        </table>
-    </section >
-  )
-}
-const StatisticLine = ({ text, value }) => <li>{text}: {value}</li>
-const Button = ({ clickHandle, text }) => <button onClick={clickHandle}>{text}</button>
-
-//1.12
 const anecdotes = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -67,64 +12,46 @@ const anecdotes = [
 
 
 const App = () => {
-  const [good, setGood] = useState(0)
-  const [neutral, setNeutral] = useState(0)
-  const [bad, setBad] = useState(0)
+ 
   const [anecdoteIndex, setAnecdoteIndex] = useState(0)
-  const [anecdote, setAnecdote] = useState(anecdotes[anecdoteIndex])
+  const anecdote = () => anecdotes[anecdoteIndex]
+  const [votes, setVotes] = useState(Array(anecdotes.length).fill(0))
+  
 
-  const average = () => (good + (bad * -1)) / (good + neutral + bad);
-
-  const positive = () => (good / (good + neutral + bad)) * 100;
-  const total = good + neutral + bad;
-
-
-  const handleNextAnecdote = () => { 
-    let randomAnedote = anecdotes[getRandomInt(anecdotes.length)]
-
-    while (randomAnedote === anecdote) {
-      randomAnedote = anecdotes[getRandomInt(anecdotes.length)]
+  const handleNextAnecdote = () => {
+    let randomIndex = Math.floor(Math.random() * anecdotes.length)
+    while (anecdotes[randomIndex] === anecdote()) {
+      randomIndex = Math.floor(Math.random() * anecdotes.length)
     }
-    return setAnecdote(randomAnedote)
+    setAnecdoteIndex(randomIndex)
   }
 
-  function getRandomInt(max) {
-    const randomNum = Math.floor(Math.random() * max)
-    console.log(randomNum)
-    setAnecdoteIndex(randomNum)
+  const handleVote = (anecdoteIndex) => {
+    const copy = [...votes]
+    copy[anecdoteIndex] += 1
+    setVotes(copy)
   }
 
-  function handleVote() {
-
+  const topVotedAnecdote = () => {
+    const max = Math.max(...votes) > 0 ? Math.max(...votes) : null
+    return anecdotes[votes.indexOf(max)] || 'No anecdotes have been voted yet'
   }
 
   return (
-    <>
-      <section>
-        <header>
-          <h1>
-            1.6 to 1.11 - Give Feedback
-          </h1>
-        </header>
-        <main>
-          <Button clickHandle={() => setGood(good + 1)} text="Good" />
-          <Button clickHandle={() => setNeutral(neutral + 1)} text="Neutral" />
-          <Button clickHandle={() => setBad(bad + 1)} text="Bad" />
-          {total > 0 ? <Statistics data={{ good, neutral, bad, average, positive, total }} /> : <p>No feedback given</p>}
-        </main>
-      </section>
-      <hr />
       <section>
         <header>
           <h1>1.12</h1>
         </header>
         <main>
-          <p>{anecdote}</p>
-          <button onClick={handleVote}>vote</button>
+          <p>{anecdote()}</p>
+          <p>has {votes[anecdoteIndex]} votes</p>
+          <button onClick={() => handleVote(anecdoteIndex)}>vote</button>
           <button onClick={handleNextAnecdote}>next anecdote</button>
+          <hr />
+          <h2>Anecdote with most votes</h2>
+          <p>{topVotedAnecdote()}</p>
         </main>
       </section>
-    </>
   )
 }
 
