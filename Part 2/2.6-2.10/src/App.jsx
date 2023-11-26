@@ -15,7 +15,14 @@ const App = () => {
     const personObject = {
       name: newName
     }
-    setPersons([...persons, personObject])
+    const duplicated = persons.filter(person => person.name.toLowerCase() === personObject.name.toLocaleLowerCase())
+
+    if (duplicated.length === 0) {
+      setPersons([...persons, personObject])
+      setNewName('');
+    }else {
+      alert(`${personObject.name} is already added to phonebook`)
+    }
   }
 
   return (
