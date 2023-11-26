@@ -14,4 +14,4 @@ const NewEntry = ({ onSubmit, valueName, onChangeName, valueTelf, onChangeNumber
   )
 }
 
-export default NewEntry;
+export default NewEntry

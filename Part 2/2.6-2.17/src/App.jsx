@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import Search from './components/Search'
 import NewEntry from './components/NewEntry'
 import DisplayEntries from './components/DisplayEntries'
-import axios from 'axios'
-
-
+import entryService from './services/entryService'
+import isDuplicatedNameService from './services/isDuplicatedNameService'
+import isDuplicatedNumberService from './services/isDuplicatedNumberService'
 
 const App = () => {
   const [entries, setEntries] = useState([])
@@ -15,33 +15,37 @@ const App = () => {
   const newNumberUpdate = (event) => {
     setNewEntry({ ...newEntry, number: event.target.value })
   }
+
   const addNewEntry = (event) => {
     event.preventDefault()
+
     const entryObject = {
       ...newEntry,
-      id: entries.length + 1,
+      id: entries.length + 1
     }
 
-    const duplicatedName = entries.filter(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase())
-    const duplicatedTelf = entries.filter(entry => entry.number.toLowerCase() === entryObject.number.toLowerCase())
 
-    if (duplicatedName.length > 0 || duplicatedTelf.length > 0) {
+    if (isDuplicatedNameService(entries, entryObject) || isDuplicatedNumberService(entries, entryObject)) {
       alert(`${entryObject.name} or ${entryObject.number} found in the phonebook`)
     } else {
-      setEntries(entries.concat(entryObject))
-      setNewEntry({ name: '', number: '' })
+      entryService
+        .addEntry(entryObject)
+        .then(response => {
+          setEntries(entries.concat(response))
+          setNewEntry({ name: '', number: '' })
+        })
     }
   }
 
-  const initialDataFetch = () => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then((response) => {
-        setEntries(entries.concat(response.data))
-      })
-  }
 
-  useEffect(initialDataFetch, [])
+
+  useEffect(() => {
+    entryService
+      .initialDataFetch()
+      .then(initialData => {
+        setEntries(initialData)
+      })
+  }, [])
 
   const [showAll, setShowAll] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -83,4 +87,3 @@ const App = () => {
 }
 
 export default App
-

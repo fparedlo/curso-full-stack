@@ -5,5 +5,4 @@ const DisplayEntries = ({ entries }) =>
     }
   </main>
 
-
-export default DisplayEntries;
+export default DisplayEntries

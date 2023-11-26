@@ -1,5 +1,3 @@
-
-
 const Search = ({ value, onChange }) => {
   return (
     <main>
