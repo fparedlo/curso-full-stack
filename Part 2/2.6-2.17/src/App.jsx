@@ -1,17 +1,19 @@
-import { useState } from 'react'
-import initialPhones from "./data/initialPhones"
+import { useEffect, useState } from 'react'
 import Search from './components/Search'
 import NewEntry from './components/NewEntry'
 import DisplayEntries from './components/DisplayEntries'
+import axios from 'axios'
+
+
 
 const App = () => {
-  const [entries, setEntries] = useState([...initialPhones])
-  const [newEntry, setNewEntry] = useState({ name: '', telf: '' })
+  const [entries, setEntries] = useState([])
+  const [newEntry, setNewEntry] = useState({ name: '', number: '' })
   const newNameUpdate = (event) => {
     setNewEntry({ ...newEntry, name: event.target.value })
   }
   const newNumberUpdate = (event) => {
-    setNewEntry({ ...newEntry, telf: event.target.value })
+    setNewEntry({ ...newEntry, number: event.target.value })
   }
   const addNewEntry = (event) => {
     event.preventDefault()
@@ -21,16 +23,25 @@ const App = () => {
     }
 
     const duplicatedName = entries.filter(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase())
-    const duplicatedTelf = entries.filter(entry => entry.telf.toLowerCase() === entryObject.telf.toLowerCase())
+    const duplicatedTelf = entries.filter(entry => entry.number.toLowerCase() === entryObject.number.toLowerCase())
 
     if (duplicatedName.length > 0 || duplicatedTelf.length > 0) {
-      alert(`${entryObject.name} or ${entryObject.telf} found in the phonebook`)
+      alert(`${entryObject.name} or ${entryObject.number} found in the phonebook`)
     } else {
-      setEntries([...entries, entryObject])
-      setNewEntry({ name: '', telf: '' })
+      setEntries(entries.concat(entryObject))
+      setNewEntry({ name: '', number: '' })
     }
   }
 
+  const initialDataFetch = () => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then((response) => {
+        setEntries(entries.concat(response.data))
+      })
+  }
+
+  useEffect(initialDataFetch, [])
 
   const [showAll, setShowAll] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,7 +68,7 @@ const App = () => {
           onSubmit={addNewEntry}
           valueName={newEntry.name}
           onChangeName={newNameUpdate}
-          valueTelf={newEntry.telf}
+          valueTelf={newEntry.number}
           onChangeNumber={newNumberUpdate} />
       </section>
       <section>
