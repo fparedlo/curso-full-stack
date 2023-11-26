@@ -5,5 +5,5 @@ import App from './App'
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <main class="container"><App /></main>
+  <main className="container"><App /></main>
 )
