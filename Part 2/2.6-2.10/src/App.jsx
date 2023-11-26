@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import initialPhones from "./data/initialPhones"
+import Search from './components/Search'
+import NewEntry from './components/NewEntry'
+import DisplayEntries from './components/DisplayEntries'
 
 const App = () => {
   const [entries, setEntries] = useState([...initialPhones])
@@ -31,7 +34,7 @@ const App = () => {
 
   const [showAll, setShowAll] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const displayedEntries = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const entriesToShow = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const doSearch = (event) => {
     setSearchTerm(event.target.value)
@@ -44,38 +47,24 @@ const App = () => {
         <header>
           <h1>PhoneBook</h1>
         </header>
-        <main>
-          <search>
-            <label htmlFor="query">Filter shown with</label>
-            <input id="query" type="search" value={searchTerm} onChange={doSearch} />
-          </search>
-        </main>
+        <Search value={searchTerm} onChange={doSearch} />
       </section>
       <section>
         <header>
           <h1>Add a new</h1>
         </header>
-        <main>
-          <form onSubmit={addNewEntry}>
-            <label htmlFor="name">name:</label>
-            <input id="name" type="text" value={newEntry.name} onChange={newNameUpdate} required />
-            <label htmlFor="telf">Telephone:</label>
-            <input id="telf" type="text" value={newEntry.telf} onChange={newNumberUpdate} required />
-            <div>
-              <button type="submit">add</button>
-            </div>
-          </form>
-        </main>
+        <NewEntry
+          onSubmit={addNewEntry}
+          valueName={newEntry.name}
+          onChangeName={newNameUpdate}
+          valueTelf={newEntry.telf}
+          onChangeNumber={newNumberUpdate} />
       </section>
       <section>
         <header>
           <h1>Numbers</h1>
         </header>
-        <main>
-          {
-            displayedEntries.map(entry => <p key={entry.id}>{entry.name} <strong>{entry.telf}</strong></p>)
-          }
-        </main>
+        <DisplayEntries entries={entriesToShow} />
       </section>
 
     </div>
