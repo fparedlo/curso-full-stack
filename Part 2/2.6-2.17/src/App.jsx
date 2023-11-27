@@ -3,12 +3,14 @@ import Search from './components/Search'
 import NewEntry from './components/NewEntry'
 import DisplayEntries from './components/DisplayEntries'
 import entryService from './services/entryService'
+import Notification from './components/Notification'
 
 const App = () => {
   const [entries, setEntries] = useState([])
   const [newEntry, setNewEntry] = useState({ name: '', number: '' })
   const [showAll, setShowAll] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [actionMessage, setActionMessage] = useState(null)
   const entriesToShow = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   useEffect(() => {
@@ -35,7 +37,11 @@ const App = () => {
     }
 
     if (entryService.isDuplicatedEntry(entries, entryObject)) {
-      return alert('Entry already exists')
+      setActionMessage('Entry already exists')
+      setTimeout(() => {
+        setActionMessage(null)
+      }, 5000)
+      return;
     }
 
     if (
@@ -50,6 +56,11 @@ const App = () => {
           .then(response => {
             setEntries(entries.map(entry => entry.id !== id ? entry : response))
             setNewEntry({ name: '', number: '' })
+            setActionMessage(`${entryObject.name} has been updated`)
+            setTimeout(() => {
+              setActionMessage(null)
+            }, 5000)
+            return;
           })
       }
       return;
@@ -67,6 +78,10 @@ const App = () => {
       .then(response => {
         setEntries(entries.concat(response))
         setNewEntry({ name: '', number: '' })
+        setActionMessage(`${entryObject.name} has been added`)
+        setTimeout(() => {
+          setActionMessage(null)
+        }, 5000)
       })
 
   }
@@ -104,6 +119,7 @@ const App = () => {
         <header>
           <h1>Add a new</h1>
         </header>
+        <Notification message={actionMessage} />
         <NewEntry
           onSubmit={addNewEntry}
           valueName={newEntry.name}
