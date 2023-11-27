@@ -19,8 +19,16 @@ const addEntry = async (entry) => {
   }catch(e){
     console.log(e)
   }
-  
-  
 }
 
-export default { initialDataFetch, addEntry }
+const removeEntry = async (id) => {
+  try {
+    const request = await axios.delete(`${baseUrl}/${id}`)
+    const response = await request
+    return response
+  }catch(e){
+    console.log(e)
+  }
+}
+
+export default { initialDataFetch, addEntry, removeEntry }

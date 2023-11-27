@@ -37,8 +37,6 @@ const App = () => {
     }
   }
 
-
-
   useEffect(() => {
     entryService
       .initialDataFetch()
@@ -54,6 +52,17 @@ const App = () => {
   const doSearch = (event) => {
     setSearchTerm(event.target.value)
     setShowAll(false)
+  }
+
+  const remove = (id) => {
+    window.confirm(`Are you sure you want to remove ${entries.find(entry => entry.id === id).name}?`)
+    entryService
+      .removeEntry(id)
+      .then(response => {
+        if(response.status === 200){
+          setEntries(entries.filter(entry => entry.id !== id))
+        }
+      })
   }
 
   return (
@@ -79,7 +88,7 @@ const App = () => {
         <header>
           <h1>Numbers</h1>
         </header>
-        <DisplayEntries entries={entriesToShow} />
+        <DisplayEntries entries={entriesToShow} removeEntry={remove} />
       </section>
 
     </div>
