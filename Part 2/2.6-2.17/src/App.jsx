@@ -3,51 +3,84 @@ import Search from './components/Search'
 import NewEntry from './components/NewEntry'
 import DisplayEntries from './components/DisplayEntries'
 import entryService from './services/entryService'
-import isDuplicatedNameService from './services/isDuplicatedNameService'
-import isDuplicatedNumberService from './services/isDuplicatedNumberService'
 
 const App = () => {
   const [entries, setEntries] = useState([])
   const [newEntry, setNewEntry] = useState({ name: '', number: '' })
-  const newNameUpdate = (event) => {
-    setNewEntry({ ...newEntry, name: event.target.value })
-  }
-  const newNumberUpdate = (event) => {
-    setNewEntry({ ...newEntry, number: event.target.value })
-  }
-
-  const addNewEntry = (event) => {
-    event.preventDefault()
-
-    const entryObject = {
-      ...newEntry,
-      id: entries.length + 1
-    }
-
-
-    if (isDuplicatedNameService(entries, entryObject) || isDuplicatedNumberService(entries, entryObject)) {
-      alert(`${entryObject.name} or ${entryObject.number} found in the phonebook`)
-    } else {
-      entryService
-        .addEntry(entryObject)
-        .then(response => {
-          setEntries(entries.concat(response))
-          setNewEntry({ name: '', number: '' })
-        })
-    }
-  }
+  const [showAll, setShowAll] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const entriesToShow = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   useEffect(() => {
     entryService
-      .initialDataFetch()
+      .dataFetch()
       .then(initialData => {
         setEntries(initialData)
       })
   }, [])
 
-  const [showAll, setShowAll] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const entriesToShow = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const newNameUpdate = (event) => {
+    setNewEntry({ ...newEntry, name: event.target.value })
+  }
+
+  const newNumberUpdate = (event) => {
+    setNewEntry({ ...newEntry, number: event.target.value })
+  }
+
+  const findAndUpdate = (entries, entryObject) => {
+    const id = entries.find(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase()).id
+    entryService
+      .updateEntry(id, entryObject)
+      .then(response => {
+        setEntries(entries.map(entry => entry.id !== id ? entry : response.data))
+        setNewEntry({ name: '', number: '' })
+      })
+  }
+
+
+  const addNewEntry = (event) => {
+    event.preventDefault()
+
+    const entryObject = {
+      ...newEntry
+    }
+
+    if (entryService.isDuplicatedEntry(entries, entryObject)) {
+      return alert('Entry already exists')
+    }
+
+    if (
+      entryService.isDuplicatedName(entries, entryObject) &&
+      entryService.isDuplicatedNumber(entries, entryObject) === false
+    ) {
+      if (window.confirm(`The name ${entryObject.name} is already in the phonebook, replace the old number with a new one?`)) {
+        const id = entries.find(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase()).id
+
+        entryService
+          .updateEntry(id, entryObject)
+          .then(response => {
+            setEntries(entries.map(entry => entry.id !== id ? entry : response))
+            setNewEntry({ name: '', number: '' })
+          })
+      }
+      return;
+    }
+
+    if (
+      entryService.isDuplicatedName(entries, entryObject) === false &&
+      entryService.isDuplicatedNumber(entries, entryObject)
+    ) {
+      return alert(`${entryObject.number} is already registered under another name, please review`);
+    }
+
+    entryService
+      .addEntry(entryObject)
+      .then(response => {
+        setEntries(entries.concat(response))
+        setNewEntry({ name: '', number: '' })
+      })
+
+  }
 
   const doSearch = (event) => {
     setSearchTerm(event.target.value)
@@ -55,14 +88,19 @@ const App = () => {
   }
 
   const remove = (id) => {
-    window.confirm(`Are you sure you want to remove ${entries.find(entry => entry.id === id).name}?`)
-    entryService
-      .removeEntry(id)
-      .then(response => {
-        if(response.status === 200){
-          setEntries(entries.filter(entry => entry.id !== id))
-        }
-      })
+    if (window.confirm(`Are you sure you want to remove ${entries.find(entry => entry.id === id).name}?`)) {
+      entryService
+        .removeEntry(id)
+        .then(response => {
+          if (response.status === 200) {
+            entryService
+              .dataFetch()
+              .then(serveData => {
+                setEntries(serveData)
+              })
+          }
+        })
+    }
   }
 
   return (

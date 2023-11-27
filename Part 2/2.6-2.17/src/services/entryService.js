@@ -1,22 +1,22 @@
 import axios from 'axios'
 const baseUrl = 'http://localhost:3001/persons'
 
-const initialDataFetch = async() => {
-  try{
+const dataFetch = async () => {
+  try {
     const request = await axios.get(`${baseUrl}`)
     const response = await request.data
     return response
-  }catch(e){
+  } catch (e) {
     console.log(e)
   }
 }
 
 const addEntry = async (entry) => {
-  try{
-    const request = await axios.post(baseUrl, entry)
+  try {
+    const request = await axios.post(baseUrl, { ...entry, id: crypto.randomUUID() })
     const response = await request.data
     return response
-  }catch(e){
+  } catch (e) {
     console.log(e)
   }
 }
@@ -26,9 +26,46 @@ const removeEntry = async (id) => {
     const request = await axios.delete(`${baseUrl}/${id}`)
     const response = await request
     return response
-  }catch(e){
+  } catch (e) {
     console.log(e)
   }
 }
 
-export default { initialDataFetch, addEntry, removeEntry }
+const updateEntry = async (id, newObject) => {
+  try {
+    const request = await axios.put(`${baseUrl}/${id}`, { ...newObject , id })
+    const response = await request.data
+    return response
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+const isDuplicatedEntry = (entries, entryObject) => {
+  if (
+    isDuplicatedName(entries, entryObject) &&
+    isDuplicatedNumber(entries, entryObject)
+  ) {
+    return true
+  }
+  return false
+}
+
+const isDuplicatedName = (entries, entryObject) => {
+  const duplicated = entries.filter(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase())
+  if (duplicated.length > 0) {
+    return true
+  }
+  return false
+}
+
+const isDuplicatedNumber = (entries, entryObject) => {
+  const duplicated = entries.filter(entry => entry.number.toLowerCase() === entryObject.number.toLowerCase())
+  if (duplicated.length > 0) {
+    return true
+  }
+  return false
+}
+
+
+export default { dataFetch, addEntry, removeEntry, updateEntry, isDuplicatedEntry, isDuplicatedName, isDuplicatedNumber }
