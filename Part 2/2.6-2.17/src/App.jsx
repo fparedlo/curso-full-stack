@@ -27,17 +27,6 @@ const App = () => {
     setNewEntry({ ...newEntry, number: event.target.value })
   }
 
-  const findAndUpdate = (entries, entryObject) => {
-    const id = entries.find(entry => entry.name.toLowerCase() === entryObject.name.toLowerCase()).id
-    entryService
-      .updateEntry(id, entryObject)
-      .then(response => {
-        setEntries(entries.map(entry => entry.id !== id ? entry : response.data))
-        setNewEntry({ name: '', number: '' })
-      })
-  }
-
-
   const addNewEntry = (event) => {
     event.preventDefault()
 
