@@ -1,7 +1,6 @@
-import {  } from 'react'
+import { } from 'react'
 
-
-function App() {
+function App () {
   return (
     <>
       Hola
