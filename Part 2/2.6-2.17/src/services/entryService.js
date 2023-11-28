@@ -14,30 +14,35 @@ const dataFetch = async () => {
 const addEntry = async (entry) => {
   try {
     const request = await axios.post(baseUrl, { ...entry, id: crypto.randomUUID() })
-    const response = await request.data
-    return response
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-const removeEntry = async (id) => {
-  try {
-    const request = await axios.delete(`${baseUrl}/${id}`)
     const response = await request
     return response
   } catch (e) {
-    console.log(e)
+    const data = await dataFetch()
+    return { message: `There was a problem adding this entry`, status: 409, data}
+  }
+}
+
+const removeEntry = async (id, name) => {
+  try {
+    const request = await axios.delete(`${baseUrl}/${id}`)
+    if (request.status === 200) {
+      const data = await dataFetch()
+      return { message: `${name} has been removed`, status: 200, data}
+    }
+  } catch (e) {
+    const data = await dataFetch()
+    return { message: `${name} is not registered anymore!`, status: 404, data}
   }
 }
 
 const updateEntry = async (id, newObject) => {
   try {
     const request = await axios.put(`${baseUrl}/${id}`, { ...newObject , id })
-    const response = await request.data
+    const response = await request
     return response
   } catch (e) {
-    console.log(e)
+    const data = await dataFetch()
+    return { message: `${newObject.name} is not registered any more!`, status: 409, data}
   }
 }
 

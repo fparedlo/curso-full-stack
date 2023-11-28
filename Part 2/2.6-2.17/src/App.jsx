@@ -11,6 +11,7 @@ const App = () => {
   const [showAll, setShowAll] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [actionMessage, setActionMessage] = useState(null)
+  const [errorBoolean, setErrorBoolean] = useState(false)
   const entriesToShow = showAll ? entries : entries.filter(entry => entry.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const App = () => {
     setNewEntry({ ...newEntry, number: event.target.value })
   }
 
-  const addNewEntry = (event) => {
+  const add = (event) => {
     event.preventDefault()
 
     const entryObject = {
@@ -37,6 +38,7 @@ const App = () => {
     }
 
     if (entryService.isDuplicatedEntry(entries, entryObject)) {
+      setErrorBoolean(true)
       setActionMessage('Entry already exists')
       setTimeout(() => {
         setActionMessage(null)
@@ -54,13 +56,25 @@ const App = () => {
         entryService
           .updateEntry(id, entryObject)
           .then(response => {
-            setEntries(entries.map(entry => entry.id !== id ? entry : response))
-            setNewEntry({ name: '', number: '' })
-            setActionMessage(`${entryObject.name} has been updated`)
-            setTimeout(() => {
-              setActionMessage(null)
-            }, 5000)
-            return;
+            if (response.status === 200) {
+              setEntries(entries.map(entry => entry.id !== id ? entry : response.data))
+              setNewEntry({ name: '', number: '' })
+              setErrorBoolean(false)
+              setActionMessage(`${entryObject.name} has been updated`)
+              setTimeout(() => {
+                setActionMessage(null)
+              }, 5000)
+              return;
+            }
+
+            if (response.status === 409) {
+              setErrorBoolean(true)
+              setActionMessage(response.message)
+              setTimeout(() => {
+                setActionMessage(null)
+              }, 5000)
+              setEntries(response.data)
+            }
           })
       }
       return;
@@ -76,12 +90,26 @@ const App = () => {
     entryService
       .addEntry(entryObject)
       .then(response => {
-        setEntries(entries.concat(response))
-        setNewEntry({ name: '', number: '' })
-        setActionMessage(`${entryObject.name} has been added`)
-        setTimeout(() => {
-          setActionMessage(null)
-        }, 5000)
+        if (response.status === 201) {
+          setEntries(entries.concat(response.data))
+          setNewEntry({ name: '', number: '' })
+
+          setErrorBoolean(false)
+          setActionMessage(`${entryObject.name} has been added`)
+          setTimeout(() => {
+            setActionMessage(null)
+          }, 5000)
+        }
+
+        if (response.status === 409) {
+          setErrorBoolean(true)
+          setActionMessage(response.message)
+          setTimeout(() => {
+            setActionMessage(null)
+          }, 5000)
+          setEntries(response.data)
+        }
+
       })
 
   }
@@ -93,15 +121,27 @@ const App = () => {
 
   const remove = (id) => {
     if (window.confirm(`Are you sure you want to remove ${entries.find(entry => entry.id === id).name}?`)) {
+
+      const name = entries.find(entry => entry.id === id).name
       entryService
-        .removeEntry(id)
+        .removeEntry(id, name)
         .then(response => {
           if (response.status === 200) {
-            entryService
-              .dataFetch()
-              .then(serveData => {
-                setEntries(serveData)
-              })
+            setErrorBoolean(false)
+            setActionMessage(response.message)
+            setTimeout(() => {
+              setActionMessage(null)
+            }, 5000)
+            setEntries(response.data)
+          }
+
+          if (response.status === 404) {
+            setErrorBoolean(true)
+            setActionMessage(response.message)
+            setTimeout(() => {
+              setActionMessage(null)
+            }, 5000)
+            setEntries(response.data)
           }
         })
     }
@@ -119,9 +159,9 @@ const App = () => {
         <header>
           <h1>Add a new</h1>
         </header>
-        <Notification message={actionMessage} />
+        <Notification message={actionMessage} errorType={errorBoolean} />
         <NewEntry
-          onSubmit={addNewEntry}
+          onSubmit={add}
           valueName={newEntry.name}
           onChangeName={newNameUpdate}
           valueTelf={newEntry.number}
