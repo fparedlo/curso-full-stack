@@ -15,15 +15,10 @@ function App () {
 
   const handleSearch = (event) => {
     setSearch(event.target.value)
-    filterCountries()
-  }
-
-  const filterCountries = () => {
-    setFilteredCountries(
-      countries.filter((country) =>
-        country.name.common.toLowerCase().includes(search.toLowerCase())
-      )
+    const results = countries.filter((country) =>
+      country.name.common.toLowerCase().includes(event.target.value.toLowerCase())
     )
+    setFilteredCountries(results)
   }
 
   return (
@@ -34,7 +29,7 @@ function App () {
       </search>
 
       <h2>Results</h2>
-      <Results data={filteredCountries} />
+      <Results filtered={filteredCountries} />
     </>
   )
 }
