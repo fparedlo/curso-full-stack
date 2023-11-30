@@ -1,4 +1,19 @@
+import { useEffect, useState } from 'react'
+
 const Results = ({ filtered }) => {
+
+  const [showSingleItem, setShowSingleItem] = useState(null)
+
+  useEffect(() => {
+    setShowSingleItem(null)
+  }, [filtered])
+
+  const handleShow = (country) => {
+    setShowSingleItem(country)
+  }
+
+
+
   return (
     <>
       {
@@ -7,10 +22,10 @@ const Results = ({ filtered }) => {
       }
 
       {
-        filtered.length < 10 && filtered.length > 1 &&
+        filtered.length < 10 && filtered.length > 1 && !showSingleItem &&
         <ul>
           {
-            filtered.map(country => <li key={country.population}>{country.name.common} <button>show</button></li>)
+            filtered.map(country => <li className="grid" key={country.population}>{country.name.common} <button onClick={() => handleShow(country)}>Show</button></li>)
           }
         </ul>
       }
@@ -25,7 +40,7 @@ const Results = ({ filtered }) => {
             <li>Languages:
               <ul>
                 {
-                  Object.entries(filtered[0].languages).map(([key, value]) => <li key={key}>{key} {value}</li>)
+                  Object.entries(filtered[0].languages).map(([key, value]) => <li key={key}>{value}</li>)
                 }
               </ul>
             </li>
@@ -33,8 +48,29 @@ const Results = ({ filtered }) => {
           </ul>
         </>
       }
+
+      {
+        showSingleItem &&
+        filtered.filter(country => country.name.common === showSingleItem.name.common).map(country =>
+          <div key={country.population}>
+            <h3>{country.name.common}</h3>
+            <ul>
+              <li>Capital: {country.capital}</li>
+              <li>Area: {country.area}</li>
+              <li>Languages:
+                <ul>
+                  {
+                    Object.entries(country.languages).map(([key, value]) => <li key={key}>{value}</li>)
+                  }
+                </ul>
+              </li>
+              <li>Flag: <img src={country.flags.svg} alt={country.flags.alt} width="100" /></li>
+            </ul>
+          </div>
+        )
+      }
     </>
   )
 }
 
-      export default Results
+export default Results
