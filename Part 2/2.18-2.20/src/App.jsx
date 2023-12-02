@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import countryService from './services/countryService'
+import fetchService from './services/externalAPIService'
 import Results from './components/Results.jsx'
+import apis from './apis/apis.js'
 
 function App () {
   const [countries, setCountries] = useState([])
@@ -8,9 +9,11 @@ function App () {
   const [filteredCountries, setFilteredCountries] = useState([])
 
   useEffect(() => {
-    countryService.fetchAll().then(({ data }) => {
-      setCountries(data)
-    })
+    fetchService
+      .fetchCountries(apis.countries)
+      .then(({ data }) => {
+        setCountries(data)
+      })
   }, [])
 
   const handleSearch = (event) => {

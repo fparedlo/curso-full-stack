@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import externalAPIService from '../services/externalAPIService'
 
 const Results = ({ filtered }) => {
-
   const [showSingleItem, setShowSingleItem] = useState(null)
 
   useEffect(() => {
@@ -12,7 +12,14 @@ const Results = ({ filtered }) => {
     setShowSingleItem(country)
   }
 
-
+  const capitalWeather = () => {
+    // if(filtered.length === 1){
+    externalAPIService
+      .fetchWeather(filtered[0].capital[0])
+      .then(data => console.log(data))
+      .catch(err => console.log(err))
+    // }
+  }
 
   return (
     <>
@@ -65,6 +72,8 @@ const Results = ({ filtered }) => {
                 </ul>
               </li>
               <li>Flag: <img src={country.flags.svg} alt={country.flags.alt} width="100" /></li>
+              <li><h3>Weather in {country.capital}</h3></li>
+              <li>Temperature <button onClick={() => capitalWeather()}>test</button></li>
             </ul>
           </div>
         )
