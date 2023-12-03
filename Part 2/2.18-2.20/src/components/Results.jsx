@@ -1,85 +1,63 @@
-import { useEffect, useState } from 'react'
-import externalAPIService from '../services/externalAPIService'
+import { useEffect } from 'react'
+import Weather from './Weather'
 
-const Results = ({ filtered }) => {
-  const [showSingleItem, setShowSingleItem] = useState(null)
-
+const Results = ({ filteredCountries, modifyFilteredCountries, search }) => {
   useEffect(() => {
-    setShowSingleItem(null)
-  }, [filtered])
+  }, [search, filteredCountries])
 
-  const handleShow = (country) => {
-    setShowSingleItem(country)
+  if (filteredCountries.length > 10 && search.length > 0) {
+    return (
+      <p>To many results, specify another filter</p>
+    )
   }
 
-  const capitalWeather = () => {
-    // if(filtered.length === 1){
-    externalAPIService
-      .fetchWeather(filtered[0].capital[0])
-      .then(data => console.log(data))
-      .catch(err => console.log(err))
-    // }
-  }
-
-  return (
-    <>
-      {
-        filtered.length > 10 &&
-        <p>To many results, specify another filter</p>
-      }
-
-      {
-        filtered.length < 10 && filtered.length > 1 && !showSingleItem &&
-        <ul>
-          {
-            filtered.map(country => <li className="grid" key={country.population}>{country.name.common} <button onClick={() => handleShow(country)}>Show</button></li>)
-          }
-        </ul>
-      }
-
-      {
-        filtered.length === 1 &&
-        <>
-          <h3>{filtered[0].name.common}</h3>
-          <ul>
-            <li>Capital: {filtered[0].capital}</li>
-            <li>Area: {filtered[0].area}</li>
-            <li>Languages:
-              <ul>
-                {
-                  Object.entries(filtered[0].languages).map(([key, value]) => <li key={key}>{value}</li>)
-                }
-              </ul>
+  if (filteredCountries.length > 1 &&
+    filteredCountries.length < 10) {
+    return (
+      <ul>
+        {
+          filteredCountries.map(country =>
+            <li className="grid" key={country.population}>
+              {country.name.common}
+              <button onClick={() => modifyFilteredCountries(country)}>Show</button>
             </li>
-            <li>Flag: <img src={filtered[0].flags.svg} alt={filtered[0].flags.alt} width="100" /></li>
-          </ul>
-        </>
-      }
+          )
+        }
+      </ul>
+    )
+  }
 
-      {
-        showSingleItem &&
-        filtered.filter(country => country.name.common === showSingleItem.name.common).map(country =>
-          <div key={country.population}>
-            <h3>{country.name.common}</h3>
+  if (filteredCountries.length === 0 && search.length !== 0) {
+    return (
+      <p>No results found</p>
+    )
+  }
+
+  if (search.length === 0) {
+    return null
+  }
+
+  if (filteredCountries.length === 1) {
+    return (
+      <>
+        <h3>{filteredCountries[0].name.common}</h3>
+        <ul>
+          <li>Area: {filteredCountries[0].area}</li>
+          <li>Languages:
             <ul>
-              <li>Capital: {country.capital}</li>
-              <li>Area: {country.area}</li>
-              <li>Languages:
-                <ul>
-                  {
-                    Object.entries(country.languages).map(([key, value]) => <li key={key}>{value}</li>)
-                  }
-                </ul>
-              </li>
-              <li>Flag: <img src={country.flags.svg} alt={country.flags.alt} width="100" /></li>
-              <li><h3>Weather in {country.capital}</h3></li>
-              <li>Temperature <button onClick={() => capitalWeather()}>test</button></li>
+              {
+                Object.entries(filteredCountries[0].languages).map(([key, value]) => <li key={key}>{value}</li>)
+              }
             </ul>
-          </div>
-        )
-      }
-    </>
-  )
+          </li>
+          <li>Flag: <img src={filteredCountries[0].flags.svg} alt={filteredCountries[0].flags.alt} width="100" />
+          </li>
+          <Weather capital={filteredCountries[0].capital[0]} />
+        </ul>
+
+      </>
+    )
+  }
 }
 
 export default Results

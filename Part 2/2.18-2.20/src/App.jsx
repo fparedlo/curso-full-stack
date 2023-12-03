@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import fetchService from './services/externalAPIService'
 import Results from './components/Results.jsx'
 import apis from './apis/apis.js'
+import Search from './components/Search.jsx'
 
 function App () {
+  const [filteredCountries, setFilteredCountries] = useState([])
   const [countries, setCountries] = useState([])
   const [search, setSearch] = useState('')
-  const [filteredCountries, setFilteredCountries] = useState([])
+  const handleSearch = (event) => setSearch(event.target.value)
 
   useEffect(() => {
     fetchService
@@ -16,23 +18,28 @@ function App () {
       })
   }, [])
 
-  const handleSearch = (event) => {
-    setSearch(event.target.value)
-    const results = countries.filter((country) =>
-      country.name.common.toLowerCase().includes(event.target.value.toLowerCase())
-    )
-    setFilteredCountries(results)
+  useEffect(() => {
+    if (search.length > 0) {
+      const results = countries.filter((country) =>
+        country.name.common.toLowerCase().includes(search.toLowerCase())
+      )
+      setFilteredCountries(results)
+    } else {
+      setFilteredCountries(countries)
+    }
+  }, [search])
+
+  const modifyFilteredCountries = (country) => {
+    setFilteredCountries([country])
   }
 
   return (
     <>
       <h1>Search County</h1>
-      <search>
-        <input type="text" value={search} onChange={handleSearch} />
-      </search>
+      <Search search={search} handleSearch={handleSearch} />
 
       <h2>Results</h2>
-      <Results filtered={filteredCountries} />
+      <Results filteredCountries={filteredCountries} modifyFilteredCountries={modifyFilteredCountries} search={search} />
     </>
   )
 }

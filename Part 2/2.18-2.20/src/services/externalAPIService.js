@@ -12,15 +12,14 @@ const fetchCountries = async (url) => {
 }
 
 const fetchWeather = async (capital) => {
-  const api_key = import.meta.env.VITE_TOMORROW_IO
-  const options = {method: 'GET', headers: {accept: 'application/json'}};
+  const apiKey = import.meta.env.VITE_TOMORROW_IO
+  const options = { method: 'GET', headers: { accept: 'application/json' } }
   try {
-    const response = await axios.get(`${apis.weather}${capital}&apikey=${api_key}`, options);
-	  return response
+    const response = await axios.get(`${apis.weather}${capital}&apikey=${apiKey}`, options)
+    return response
   } catch (e) {
     console.log(`fetchWeather: ${e}`)
   }
 }
 
 export default { fetchCountries, fetchWeather }
-
